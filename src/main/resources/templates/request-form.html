@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Signal Request</title>
+</head>
+<body>
+<h1>Enter Signal Parameters</h1>
+<form th:action="@{/process}" th:object="${signalRequest}" method="post">
+    <label>Input Text:</label>
+    <input type="text" th:field="*{inputText}" required/><br/>
+
+    <label>Signal Type:</label>
+    <select th:field="*{type}" required>
+        <option th:each="type : ${SignalSignType.values()}"
+                th:value="${type}"
+                th:text="${type}">Type</option>
+    </select><br/>
+
+    <label>Noise Intensity:</label>
+    <input type="number" step="0.01" th:field="*{noiseIntensity}" required/><br/>
+
+    <label>Max error value:</label>
+    <input type="number" step="0.01" th:field="*{maxErrorValue}" required/><br/>
+
+    <label>Max Errors:</label>
+    <input type="number" th:field="*{maxErrors}" required/><br/>
+
+    <button type="submit">Submit</button>
+</form>
+</body>
+</html>
