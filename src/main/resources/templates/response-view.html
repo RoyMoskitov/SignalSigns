@@ -7,9 +7,12 @@
 <h1>Signal Response</h1>
 <p><strong>Encoded Signal:</strong> <span th:text="${signalResponse.encodedSignal}"></span></p>
 <p><strong>Noisy Signal:</strong> <span th:text="${signalResponse.noisySignal}"></span></p>
-<!--<p><strong>Decoded Signal:</strong> <span th:text="${signalResponse.decodedSignal}"></span></p>-->
 <p><strong>Encoded Text:</strong> <span th:text="${signalResponse.encodedText}"></span></p>
 <p><strong>Decoded Text:</strong> <span th:text="${signalResponse.decodedText}"></span></p>
+
+<img th:src="'data:image/png;base64,' + ${noisyChartBase64}" alt="Noisy signal Graph"/>
+<img th:src="'data:image/png;base64,' + ${encodedChartBase64}" alt="Encoded signal Graph"/>
+<br><br><br>
 <a href="/">Back</a>
 </body>
 </html>

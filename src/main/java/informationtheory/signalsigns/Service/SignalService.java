@@ -53,7 +53,7 @@ public class SignalService {
             }
 
             if (Math.random() <= signalRequest.getNoiseIntensity()) {
-                noisySignal.add(el + Math.random() * signalRequest.getMaxErrorValue());
+                noisySignal.add(el + (Math.random() * signalRequest.getMaxErrorValue() * (Math.random() > 0.5 ? -1 : 1)));
                 count++;
             } else {
                 noisySignal.add(el);
