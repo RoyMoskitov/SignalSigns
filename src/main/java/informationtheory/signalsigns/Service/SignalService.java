@@ -39,7 +39,7 @@ public class SignalService {
                 response.setEncodedText(request.getInputText());
                 response.setEncodedSignal(encodeTextFrequency(request));
                 response.setNoisySignal(makeSignalNoisy(response.getEncodedSignal(), request));
-                response.setDecodedText(decodeFrequencyToText(restoreSignal(response.getNoisySignal(), 25)));
+                response.setDecodedText(decodeFrequencyToText(restoreFrequencySignal(response.getNoisySignal(), 25)));
             }
             case AMPLITUDE -> {
                 response.setEncodedText(request.getInputText());
@@ -78,58 +78,62 @@ public class SignalService {
     }
 
 
-    // Кодируем текст в массив +1 и -1
+    private static final Map<Character, Double> polarMap = new HashMap<>();
+    static {
+        polarMap.put('0', -1.0);  // частота для бита 0
+        polarMap.put('1', 1.0);  // частота для бита 1
+    }// Метод для кодирования строки ПСП
     private List<Double> encodeTextPolar(SignalRequest signalRequest) {
         String inputText = signalRequest.getInputText();
         if (inputText == null || inputText.isEmpty()) {
             throw new IllegalArgumentException("Input text cannot be null or empty.");
         }
-
-        List<Double> encodedList = new ArrayList<>();
+        List<Double> encodedMessage = new ArrayList<>();
 
         for (char c : inputText.toCharArray()) {
             // Получаем бинарное представление символа (8 бит)
             String binaryString = String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
 
-            // Преобразуем каждый бит: 0 -> -1, 1 -> +1
+            // Преобразуем каждый бит: 0 -> -1.0, 1 -> 1.0
             for (char bit : binaryString.toCharArray()) {
-                encodedList.add(bit == '0' ? -1.0 : 1.0);
+                Double amplitude = polarMap.get(bit);
+                for (int i = 0; i < 100; i++) {  // В 1 секунду(бит) 100 шагов по 0.01 секунды
+                    encodedMessage.add(amplitude);
+                }
             }
         }
-
-        // Конвертируем List<Double> в массив double[]
-        return encodedList.stream().mapToDouble(Double::doubleValue).boxed().toList();
+        return encodedMessage.stream().mapToDouble(Double::doubleValue).boxed().toList();
     }
 
     // Восстанавливаем текст из массива +1 и -1
-    private String decodePolarToText(List<Double> encodedSignal) {
-        if (encodedSignal == null || encodedSignal.size() % 8 != 0) {
-            throw new IllegalArgumentException("Invalid encoded signal length. Must be a multiple of 8.");
+    private String decodePolarToText(List<Double> signal) {
+        if (signal == null || signal.isEmpty()) {
+            throw new IllegalArgumentException("Input signal cannot be null or empty.");
         }
-
         StringBuilder decodedText = new StringBuilder();
+        StringBuilder binaryString = new StringBuilder();
 
-        for (int i = 0; i < encodedSignal.size(); i += 8) {
-            StringBuilder binaryString = new StringBuilder();
-
-            // Обрабатываем 8 бит
-            for (int j = i; j < i + 8; j++) {
-                double value = encodedSignal.get(j);
-
-                // Преобразуем зашумленный сигнал в четкое значение
-                if (value > 0) {
-                    binaryString.append('1'); // Ближайшее к +1
-                } else if (value < 0) {
-                    binaryString.append('0'); // Ближайшее к -1
-                } else {
-                    // Если значение ровно 0, выбираем случайно
-                    binaryString.append(Math.random() < 0.5 ? '0' : '1');
-                }
+        int samplesPerBit = 100;  // В каждом бите 100 отсчетов
+        for (int i = 0; i < signal.size(); i += samplesPerBit) {
+            // Рассчитываем период (интервал времени) для текущего бита
+            double sum = 0;
+            for (int j = i; j < i+100; j++) {
+                sum += signal.get(j);
+            }
+            // Сравниваем с пороговыми значениями для определения 0 или 1
+            if (sum/samplesPerBit > 0.0) {
+                binaryString.append("1");
+            } else {
+                binaryString.append("0");
             }
 
-            // Преобразуем строку бита в символ
-            int asciiCode = Integer.parseInt(binaryString.toString(), 2);
-            decodedText.append((char) asciiCode);
+            // После накопления 8 битов восстанавливаем один символ
+            if (binaryString.length() == 8) {
+                String byteString = binaryString.toString();
+                char decodedChar = (char) Integer.parseInt(byteString, 2);
+                decodedText.append(decodedChar);
+                binaryString.setLength(0);  // Очищаем строку для следующего байта
+            }
         }
 
         return decodedText.toString();
@@ -140,8 +144,7 @@ public class SignalService {
     static {
         frequencyMap.put('0', 1.0);  // частота для бита 0
         frequencyMap.put('1', 2.0);  // частота для бита 1
-    }
-    // Метод для кодирования строки ЧСП
+    }// Метод для кодирования строки ЧСП
     public static List<Double> encodeTextFrequency(SignalRequest signalRequest) {
         String inputText = signalRequest.getInputText();
         if (inputText == null || inputText.isEmpty()) {
@@ -165,7 +168,7 @@ public class SignalService {
         return encodedMessage.stream().mapToDouble(Double::doubleValue).boxed().toList();
     }
 
-    public static List<Double> restoreSignal(List<Double> noisySignal, int windowSize) {
+    public static List<Double> restoreFrequencySignal(List<Double> noisySignal, int windowSize) {
         List<Double> restoredSignal = new ArrayList<>();
 
         for (int i = 0; i < noisySignal.size(); i++) {
@@ -222,8 +225,6 @@ public class SignalService {
 
         return decodedText.toString();
     }
-
-
 
 
     private static final Map<Character, Double> amplitudeMap = new HashMap<>();
