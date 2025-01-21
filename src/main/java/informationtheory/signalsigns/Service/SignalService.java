@@ -121,5 +121,86 @@ public class SignalService {
         return decodedText.toString();
     }
 
+        // Кодирование текста с использованием кодо-импульсного признака
+        private List<Integer> encodeTextPCM(SignalRequest signalRequest) {
+        String inputText = signalRequest.getInputText();
+        if (inputText == null || inputText.isEmpty()) {
+            throw new IllegalArgumentException("Input text cannot be null or empty.");
+        }
+    
+        List<Integer> encodedList = new ArrayList<>();
+    
+        for (char c : inputText.toCharArray()) {
+            // Получаем бинарное представление символа (8 бит)
+            String binaryString = String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
+    
+            // Преобразуем каждый бит: 0 -> 0, 1 -> 1 (импульсное представление)
+            for (char bit : binaryString.toCharArray()) {
+                encodedList.add(bit == '0' ? 0 : 1);
+            }
+        }
+    
+        return encodedList;
+    }
+
+    // Декодирование текста из кодо-импульсного признака
+    private String decodePCMToText(List<Integer> encodedSignal) {
+        if (encodedSignal == null || encodedSignal.size() % 8 != 0) {
+            throw new IllegalArgumentException("Invalid encoded signal length. Must be a multiple of 8.");
+        }
+    
+        StringBuilder decodedText = new StringBuilder();
+    
+        for (int i = 0; i < encodedSignal.size(); i += 8) {
+            StringBuilder binaryString = new StringBuilder();
+    
+            // Обрабатываем 8 бит
+            for (int j = i; j < i + 8; j++) {
+                binaryString.append(encodedSignal.get(j));
+            }
+    
+            // Преобразуем строку бита в символ
+            int asciiCode = Integer.parseInt(binaryString.toString(), 2);
+            decodedText.append((char) asciiCode);
+        }
+    
+        return decodedText.toString();
+    }
+
+        // Кодирование текста с использованием временного признака
+        private List<Double> encodeTextTemporal(SignalRequest signalRequest) {
+        String inputText = signalRequest.getInputText();
+        if (inputText == null || inputText.isEmpty()) {
+            throw new IllegalArgumentException("Input text cannot be null or empty.");
+        }
+    
+        List<Double> encodedList = new ArrayList<>();
+    
+        for (char c : inputText.toCharArray()) {
+            int asciiValue = (int) c;
+    
+            // Используем ASCII значение как интервал времени (например, в миллисекундах)
+            encodedList.add((double) asciiValue);
+        }
+    
+        return encodedList;
+    }
+
+        // Декодирование текста из временного признака
+        private String decodeTemporalToText(List<Double> encodedSignal) {
+        if (encodedSignal == null || encodedSignal.isEmpty()) {
+            throw new IllegalArgumentException("Encoded signal cannot be null or empty.");
+        }
+    
+        StringBuilder decodedText = new StringBuilder();
+    
+        for (double interval : encodedSignal) {
+            // Преобразуем интервал обратно в символ ASCII
+            char c = (char) Math.round(interval);
+            decodedText.append(c);
+        }
+    
+        return decodedText.toString();
+    }
 
 }
