@@ -41,6 +41,12 @@ public class SignalService {
                 response.setNoisySignal(makeSignalNoisy(response.getEncodedSignal(), request));
                 response.setDecodedText(decodeFrequencyToText(restoreSignal(response.getNoisySignal(), 25)));
             }
+            case AMPLITUDE -> {
+                response.setEncodedText(request.getInputText());
+                response.setEncodedSignal(encodeTextAmplitude(request));
+                response.setNoisySignal(makeSignalNoisy(response.getEncodedSignal(), request));
+                response.setDecodedText(decodeAmplitudeToText(response.getNoisySignal()));
+            }
             default -> throw new RuntimeException("This type of signal is not supported yet");
         }
 
@@ -128,16 +134,13 @@ public class SignalService {
 
         return decodedText.toString();
     }
+
     // Карта для отображения бита в соответствующую частоту
     private static final Map<Character, Double> frequencyMap = new HashMap<>();
     static {
-        // Для простоты используем 2 частоты:
-        // Низкая частота для бита 0 (1 Гц)
-        // Высокая частота для бита 1 (2 Гц)
         frequencyMap.put('0', 1.0);  // частота для бита 0
         frequencyMap.put('1', 2.0);  // частота для бита 1
     }
-
     // Метод для кодирования строки ЧСП
     public static List<Double> encodeTextFrequency(SignalRequest signalRequest) {
         String inputText = signalRequest.getInputText();
@@ -220,6 +223,68 @@ public class SignalService {
         return decodedText.toString();
     }
 
+
+
+
+    private static final Map<Character, Double> amplitudeMap = new HashMap<>();
+    static {
+        amplitudeMap.put('0', 0.0);  // амплитуда для бита 0
+        amplitudeMap.put('1', 2.0);  // амплитуда для бита 1
+    }
+    public static List<Double> encodeTextAmplitude(SignalRequest signalRequest) {
+        String inputText = signalRequest.getInputText();
+        if (inputText == null || inputText.isEmpty()) {
+            throw new IllegalArgumentException("Input text cannot be null or empty.");
+        }
+        List<Double> encodedMessage = new ArrayList<>();
+
+        for (char c : inputText.toCharArray()) {
+            // Получаем бинарное представление символа (8 бит)
+            String binaryString = String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
+
+            // Преобразуем каждый бит: 0 -> 0.0, 1 -> 2.0
+            for (char bit : binaryString.toCharArray()) {
+                Double amplitude = amplitudeMap.get(bit);
+                for (int i = 0; i < 100; i++) {  // В 1 секунду(бит) 100 шагов по 0.01 секунды
+                    encodedMessage.add(amplitude);
+                }
+            }
+        }
+        return encodedMessage.stream().mapToDouble(Double::doubleValue).boxed().toList();
+    }
+
+    public static String decodeAmplitudeToText(List<Double> signal) {
+        if (signal == null || signal.isEmpty()) {
+            throw new IllegalArgumentException("Input signal cannot be null or empty.");
+        }
+        StringBuilder decodedText = new StringBuilder();
+        StringBuilder binaryString = new StringBuilder();
+
+        int samplesPerBit = 100;  // В каждом бите 100 отсчетов
+        for (int i = 0; i < signal.size(); i += samplesPerBit) {
+            // Рассчитываем период (интервал времени) для текущего бита
+            double sum = 0;
+            for (int j = i; j < i+100; j++) {
+                sum += signal.get(j);
+            }
+            // Сравниваем с пороговыми значениями для определения 0 или 1
+            if (sum/samplesPerBit > 1.0) {
+                binaryString.append("1");
+            } else {
+                binaryString.append("0");
+            }
+
+            // После накопления 8 битов восстанавливаем один символ
+            if (binaryString.length() == 8) {
+                String byteString = binaryString.toString();
+                char decodedChar = (char) Integer.parseInt(byteString, 2);
+                decodedText.append(decodedChar);
+                binaryString.setLength(0);  // Очищаем строку для следующего байта
+            }
+        }
+
+        return decodedText.toString();
+    }
 
 /*    public static void visualizeSignal(List<Double> encodedMessage) {
         // Создаем серию для графика
