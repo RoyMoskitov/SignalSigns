@@ -395,11 +395,11 @@ public class SignalService {
         for (int i = 0; i < signal.size(); i += samplesPerBit) {
             // Рассчитываем период (интервал времени) для текущего бита
             double sum = 0;
-            for (int j = i; j < i+100; j++) {
+            for (int j = i+34; j < i+67; j++) {
                 sum += signal.get(j);
             }
             // Сравниваем с пороговыми значениями для определения 0 или 1
-            if (sum > 50.5) {
+            if (sum > 16.5) {
                 binaryString.append("1");
             } else {
                 binaryString.append("0");
@@ -416,44 +416,5 @@ public class SignalService {
 
         return decodedText.toString();
     }
-
-/*    public static void visualizeSignal(List<Double> encodedMessage) {
-        // Создаем серию для графика
-        XYSeries series = new XYSeries("Encoded Signal");
-
-        // Добавляем данные в серию (время t и соответствующее значение амплитуды)
-        for (int i = 0; i < encodedMessage.size(); i++) {
-            double time = i * 0.01;  // Время шагами по 0.1 секунды
-            double amplitude = encodedMessage.get(i);
-            series.add(time, amplitude);
-        }
-
-        // Создаем коллекцию для отображения серии
-        XYSeriesCollection dataset = new XYSeriesCollection(series);
-
-        // Создаем график
-        JFreeChart chart = ChartFactory.createXYLineChart(
-                "Signal Visualization", // Заголовок
-                "Time (s)",            // Ось X
-                "Amplitude",           // Ось Y
-                dataset,               // Данные
-                PlotOrientation.VERTICAL,
-                true,                  // Легенда
-                true,                  // Подсказки
-                false                  // URL-обработчики
-        );
-
-        // Настройка панели для отображения графика
-        ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new Dimension(800, 600));
-
-        // Создаем окно для отображения графика
-        JFrame frame = new JFrame("Signal Visualization");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.getContentPane().add(chartPanel, BorderLayout.CENTER);
-        frame.pack();
-        frame.setVisible(true);
-    }*/
-
 
 }
