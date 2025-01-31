@@ -3,7 +3,6 @@ package informationtheory.signalsigns.Controller;
 import informationtheory.signalsigns.Model.SignalRequest;
 import informationtheory.signalsigns.Model.SignalResponse;
 import informationtheory.signalsigns.Model.SignalSignType;
-import informationtheory.signalsigns.Service.ChartBuilder;
 import informationtheory.signalsigns.Service.SignalService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,29 +31,6 @@ public class SignalController {
         model.addAttribute("SignalSignType", SignalSignType.class);
         return "request-form";
     }
-
-/*    @PostMapping("/process")
-    public String processRequest(@ModelAttribute SignalRequest signalRequest, Model model) throws IOException {
-        // Здесь обработка запроса и создание SignalResponse
-        //SignalRequest savedRequest = signalService.saveSignalRequest(signalRequest);
-        SignalResponse signalResponse = signalService.generateSignalResponse(signalRequest);
-        //String noisyChartBase64 = ChartBuilder.generateChartBase64(signalResponse.getNoisySignal());
-        //String encodedChartBase64 = ChartBuilder.generateChartBase64(signalResponse.getEncodedSignal());
-        //encodedChartBase64 = ChartBuilder.visualizeSignal(signalResponse.getEncodedSignal(), "Encoded signal Graph");
-        //noisyChartBase64 = ChartBuilder.visualizeSignal(signalResponse.getNoisySignal(), "Noisy signal Graph");
-        String noisySignalDataJson = signalResponse.getNoisySignal().toString(); // Преобразуем в строку JSON
-        String encodedSignalDataJson = signalResponse.getEncodedSignal().toString(); // Преобразуем в строку JSON
-
-        // Передаем данные в модель
-        model.addAttribute("noisySignalData", noisySignalDataJson);
-        model.addAttribute("encodedSignalData", encodedSignalDataJson);
-        model.addAttribute("signalResponse", signalResponse);
-
-
-        //model.addAttribute("noisyChartBase64", noisyChartBase64);
-        //model.addAttribute("encodedChartBase64", encodedChartBase64);
-        return "response-view";
-    }*/
 
     @PostMapping("/process")
     public String processRequest(@ModelAttribute SignalRequest signalRequest, Model model) throws IOException {
