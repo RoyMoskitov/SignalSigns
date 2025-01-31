@@ -1,5 +1,5 @@
 package informationtheory.signalsigns.Model;
 
 public enum SignalSignType {
-    POLAR, PHASE, AMPLITUDE, FREQUENCY
+    POLAR, PHASE, AMPLITUDE, FREQUENCY, TIME
 }
