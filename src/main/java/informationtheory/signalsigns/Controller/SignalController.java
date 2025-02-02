@@ -15,7 +15,8 @@ import java.util.stream.IntStream;
 
 @Controller
 @RequestMapping("/")
-@SessionAttributes({"pageSettings", "responseMade"})
+@SessionAttributes({"pageSettings", "responseMade", "responseSignal",
+        "signalResponse", "noisyX", "noisyY", "encodedX", "encodedY"})
 public class SignalController {
     private final SignalService signalService;
 
@@ -42,6 +43,16 @@ public class SignalController {
         model.addAttribute("SignalSignType", SignalSignType.class);
         return "request-form";
     }
+
+    @GetMapping("/process")
+    public String returnReadyResponse(Model model) {
+        // Если в модели уже есть сессионные данные, просто покажем старый результат
+        if (model.containsAttribute("signalResponse")) {
+            return "response-view";
+        }
+        return "redirect:/";  // Если данных нет, перенаправляем на форму
+    }
+
 
     @PostMapping("/process")
     public String processRequest(@ModelAttribute("pageSettings") SignalRequest signalRequest, Model model)
