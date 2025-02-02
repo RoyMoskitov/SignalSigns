@@ -1,31 +1,80 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Signal Request</title>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
 </head>
-<body>
-<h1>Enter Signal Parameters</h1>
-<form th:action="@{/process}" th:object="${signalRequest}" method="post">
-    <label>Input Text:</label>
-    <input type="text" th:field="*{inputText}" required/><br/>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h2 class="text-center">Enter Signal Parameters</h2>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/process}" th:object="${signalRequest}" method="post" id="signalForm">
+                <div class="mb-3">
+                    <label class="form-label">Input Text (max 4 characters):</label>
+                    <input type="text" class="form-control" th:field="*{inputText}" maxlength="4" required/>
+                </div>
 
-    <label>Signal Type:</label>
-    <select th:field="*{type}" required>
-        <option th:each="type : ${SignalSignType.values()}"
-                th:value="${type}"
-                th:text="${type}">Type</option>
-    </select><br/>
+                <div class="mb-3">
+                    <label class="form-label">Signal Type:</label>
+                    <select class="form-select" th:field="*{type}" required>
+                        <option th:each="type : ${SignalSignType.values()}"
+                                th:value="${type}"
+                                th:text="${type}">Type</option>
+                    </select>
+                </div>
 
-    <label>Noise Intensity:</label>
-    <input type="number" step="0.01" th:field="*{noiseIntensity}" required/><br/>
+                <div class="mb-3">
+                    <label class="form-label">Noise Intensity (0 to 1, step 0.01):</label>
+                    <input type="number" class="form-control" th:field="*{noiseIntensity}"
+                           min="0" max="1" step="0.01" required/>
+                </div>
 
-    <label>Max error value:</label>
-    <input type="number" step="0.01" th:field="*{maxErrorValue}" required/><br/>
+                <div class="mb-3">
+                    <label class="form-label">Max Error Value (max 10):</label>
+                    <input type="number" class="form-control" th:field="*{maxErrorValue}"
+                           min="0" max="10" step="0.01" required/>
+                </div>
 
-    <label>Max Errors:</label>
-    <input type="number" th:field="*{maxErrors}" required/><br/>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary w-100">Submit</button>
+                </div>
+            </form>
 
-    <button type="submit">Submit</button>
-</form>
+            <th:block th:if="${responseMade}">
+                <div class="text-center mt-3">
+                    <form action="/process" method="post">
+                        <button type="submit" class="btn btn-secondary w-100">Back to Response</button>
+                    </form>
+                </div>
+            </th:block>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.getElementById("signalForm").addEventListener("submit", function(event) {
+        let noiseIntensity = parseFloat(document.querySelector("[name='noiseIntensity']").value);
+        let maxErrorValue = parseFloat(document.querySelector("[name='maxErrorValue']").value);
+
+        if (isNaN(noiseIntensity) || noiseIntensity < 0 || noiseIntensity > 1) {
+            alert("Noise Intensity must be between 0 and 1.");
+            event.preventDefault();
+        }
+
+        if (isNaN(maxErrorValue) || maxErrorValue < 0 || maxErrorValue > 10) {
+            alert("Max Error Value must not exceed 10.");
+            event.preventDefault();
+        }
+    });
+</script>
 </body>
 </html>

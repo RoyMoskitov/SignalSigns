@@ -6,10 +6,7 @@ import informationtheory.signalsigns.Model.SignalSignType;
 import informationtheory.signalsigns.Service.SignalService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,6 +15,7 @@ import java.util.stream.IntStream;
 
 @Controller
 @RequestMapping("/")
+@SessionAttributes({"pageSettings", "responseMade"})
 public class SignalController {
     private final SignalService signalService;
 
@@ -25,16 +23,32 @@ public class SignalController {
         this.signalService = signalService;
     }
 
+    @ModelAttribute("pageSettings")
+    public SignalRequest setupRequest() {
+        return new SignalRequest();
+    }
+
+    @ModelAttribute("responseMade")
+    public Boolean setupResponseFlag() {
+        return false;
+    }
+
+
     @GetMapping
-    public String showRequestForm(Model model) {
-        model.addAttribute("signalRequest", new SignalRequest());
+    public String showRequestForm(@ModelAttribute("pageSettings") SignalRequest signalRequest,
+                                  @ModelAttribute("responseMade") Boolean responseMade, Model model) {
+        model.addAttribute("signalRequest", signalRequest);
+        model.addAttribute("responseMade", responseMade);
         model.addAttribute("SignalSignType", SignalSignType.class);
         return "request-form";
     }
 
     @PostMapping("/process")
-    public String processRequest(@ModelAttribute SignalRequest signalRequest, Model model) throws IOException {
+    public String processRequest(@ModelAttribute("pageSettings") SignalRequest signalRequest, Model model)
+            throws IOException {
+
         SignalResponse signalResponse = signalService.generateSignalResponse(signalRequest);
+        model.addAttribute("responseMade", true);
 
         // Генерация данных для графиков
         List<Double> noisyY = signalResponse.getNoisySignal();

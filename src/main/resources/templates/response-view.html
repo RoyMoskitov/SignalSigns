@@ -2,17 +2,87 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
   <title>Signal Response</title>
-  <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body>
-<h1>Signal Response</h1>
-<p><strong>Encoded Signal:</strong> <span th:text="${signalResponse.encodedSignal}"></span></p>
-<p><strong>Noisy Signal:</strong> <span th:text="${signalResponse.noisySignal}"></span></p>
-<p><strong>Encoded Text:</strong> <span th:text="${signalResponse.encodedText}"></span></p>
-<p><strong>Decoded Text:</strong> <span th:text="${signalResponse.decodedText}"></span></p>
+<body class="bg-light">
 
-<div id="noisyChart" style="width: 800px; height: 400px;"></div>
-<div id="encodedChart" style="width: 800px; height: 400px;"></div>
+<div class="container mt-5">
+  <h1 class="text-center text-primary">Signal Response</h1>
+
+  <!-- Данные о сигнале -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">Signal Data</div>
+    <div class="card-body">
+      <p class="mb-1"><strong>Encoded Text:</strong> <span th:text="${signalResponse.encodedText}"></span></p>
+      <p class="mb-1"><strong>Decoded Text:</strong> <span th:text="${signalResponse.decodedText}"></span></p>
+    </div>
+  </div>
+
+  <!-- Блок сравнения сигналов -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between">
+      <span>Encoded Signal Comparison</span>
+      <button class="btn btn-light btn-sm" onclick="toggleSpoiler()">Show/Hide</button>
+    </div>
+    <div class="card-body" id="encodedComparison" style="display: none;">
+      <div class="table-responsive">
+        <table class="table table-bordered text-center">
+          <tbody>
+          <tr th:each="row : ${@thymeleafUtils.formatAndHighlight(signalResponse.encodedSignal, signalResponse.noisySignal)}">
+            <td th:each="cell : ${row}" th:utext="${cell}" class="px-2 py-1"></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Графики -->
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+<!--        <div class="card-header bg-primary text-white">Noisy Signal</div>-->
+        <div class="card-body">
+          <div id="noisyChart" class="chart-container"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+<!--        <div class="card-header bg-primary text-white">Encoded Signal</div>-->
+        <div class="card-body">
+          <div id="encodedChart" class="chart-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Кнопка "Back" -->
+  <div class="text-center mt-4">
+    <a href="/" class="btn btn-primary btn-lg">Back</a>
+  </div>
+</div>
+
+<style>
+  .chart-container {
+    width: 100%;
+    height: 400px;
+  }
+  .error-bit {
+    color: red;
+    font-weight: bold;
+  }
+</style>
+
+<script>
+  function toggleSpoiler() {
+    const block = document.getElementById('encodedComparison');
+    block.style.display = block.style.display === 'none' ? 'block' : 'none';
+  }
+</script>
 
 <script th:inline="javascript">
   /*<![CDATA[*/
@@ -21,6 +91,7 @@
     y: /*[[${noisyY}]]*/ [],
     type: 'scatter',
     mode: 'lines',
+    line: { color: 'blue', width: 2 },
     name: 'Noisy Signal'
   }];
 
@@ -29,24 +100,22 @@
     y: /*[[${encodedY}]]*/ [],
     type: 'scatter',
     mode: 'lines',
+    line: { color: 'blue', width: 2 },
     name: 'Encoded Signal'
   }];
 
   const layoutOptions = {
     showlegend: false,
     hovermode: 'closest',
-    margin: {t: 30},
-    xaxis: {title: 'Time (s)', showgrid: false},
-    yaxis: {title: 'Amplitude', showgrid: false}
+    margin: { t: 30 },
+    xaxis: { title: 'Time (s)', showgrid: false },
+    yaxis: { title: 'Amplitude', showgrid: false }
   };
 
-  Plotly.newPlot('noisyChart', noisyData, {...layoutOptions, title: 'Noisy Signal'});
-  Plotly.newPlot('encodedChart', encodedData, {...layoutOptions, title: 'Encoded Signal'});
+  Plotly.newPlot('noisyChart', noisyData, { ...layoutOptions, title: 'Noisy Signal' });
+  Plotly.newPlot('encodedChart', encodedData, { ...layoutOptions, title: 'Encoded Signal' });
   /*]]>*/
 </script>
 
-<br><br><br>
-<a href="/">Back</a>
 </body>
 </html>
-

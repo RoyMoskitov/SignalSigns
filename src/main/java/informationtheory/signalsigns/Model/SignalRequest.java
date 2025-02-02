@@ -29,10 +29,6 @@ public class SignalRequest {
         this.maxErrorValue = maxErrorValue;
     }
 
-    public void setMaxErrors(Integer maxErrors) {
-        this.maxErrors = maxErrors;
-    }
-
     public Long getId() {
         return id;
     }
@@ -53,10 +49,6 @@ public class SignalRequest {
         return maxErrorValue;
     }
 
-    public Integer getMaxErrors() {
-        return maxErrors;
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -64,5 +56,4 @@ public class SignalRequest {
     private SignalSignType type;
     private Double noiseIntensity;
     private Double maxErrorValue;
-    private Integer maxErrors;
 }
