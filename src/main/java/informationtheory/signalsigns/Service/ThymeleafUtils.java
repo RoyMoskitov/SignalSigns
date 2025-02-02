@@ -2,7 +2,6 @@ package informationtheory.signalsigns.Service;
 
 import org.springframework.stereotype.Component;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.text.DecimalFormat;
 
 @Component

@@ -37,9 +37,9 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Max Error Value (max 10):</label>
+                    <label class="form-label">Max Error Value (max 100):</label>
                     <input type="number" class="form-control" th:field="*{maxErrorValue}"
-                           min="0" max="10" step="0.01" required/>
+                           min="0" max="100" step="0.01" required/>
                 </div>
 
                 <div class="text-center">
@@ -70,7 +70,7 @@
             event.preventDefault();
         }
 
-        if (isNaN(maxErrorValue) || maxErrorValue < 0 || maxErrorValue > 10) {
+        if (isNaN(maxErrorValue) || maxErrorValue < 0 || maxErrorValue > 100) {
             alert("Max Error Value must not exceed 10.");
             event.preventDefault();
         }

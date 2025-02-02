@@ -23,6 +23,9 @@ public class SignalService {
     private final SignalRequestRepository signalRequestRepository;
     private final SignalResponseRepository signalResponseRepository;
 
+    //константа для определния со скольки отсчетов слева и справа начинает нарастать шум до пика
+    public static final Integer NOISE_BORDER = 40;
+
     public SignalService(SignalRequestRepository signalRequestRepository, SignalResponseRepository signalResponseRepository) {
         this.signalRequestRepository = signalRequestRepository;
         this.signalResponseRepository = signalResponseRepository;
@@ -74,13 +77,31 @@ public class SignalService {
 
 
     private List<Double> makeSignalNoisy(List<Double> originalSignal, SignalRequest signalRequest) {
-        List<Double> noisySignal = new ArrayList<>();
+        List<Double> noisySignal = new ArrayList<>(originalSignal);
+        int leftBorder, rightBorder;
 
-        for (double el : originalSignal) {
+        for (int i = 0; i < originalSignal.size(); ++i) {
             if (Math.random() <= signalRequest.getNoiseIntensity()) {
-                noisySignal.add(el + (Math.random() * signalRequest.getMaxErrorValue() * (Math.random() > 0.5 ? -1 : 1)));
-            } else {
-                noisySignal.add(el);
+                noisySignal.set(i, originalSignal.get(i)
+                        + (Math.random() * signalRequest.getMaxErrorValue() * (Math.random() > 0.5 ? -1 : 1)));
+                leftBorder = i > 40 ? i - 40 : 0;
+                rightBorder = i < (originalSignal.size() - 40) ? (i + 40) : originalSignal.size() - 1;
+                int count = 0;
+                double step;
+                if (i != leftBorder) {
+                    step = (noisySignal.get(i) - noisySignal.get(leftBorder)) / (i - leftBorder);
+                    for (int j = leftBorder; j < i; ++j, ++count) {
+                        noisySignal.set(j, noisySignal.get(leftBorder) + step * count);
+                    }
+                }
+                if (i != rightBorder) {
+                    count = 0;
+                    step = (noisySignal.get(rightBorder) - noisySignal.get(i)) / (rightBorder - i);
+                    for (int j = i; j < rightBorder; ++j, ++count) {
+                        noisySignal.set(j, noisySignal.get(i) + step * count);
+                    }
+                }
+
             }
         }
 
